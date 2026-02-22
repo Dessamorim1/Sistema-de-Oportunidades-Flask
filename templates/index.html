@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atualiza Oportunidade</title>
+    <script src="/static/js/app.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" type="text/css"
+        href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/fill/style.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+
+<body>
+    <header class="app-header navbar">
+        <div class="nome-barra">
+            Oportunidades - SAFE SOLUÇÕES
+        </div>
+    </header>
+    <div style="height: 100%; border: 1px solid #a4b7c1; margin-top: -1px; padding: 16px;">
+        <div>
+            <section class="animated scroll_estilizado fadeIn content-inside" style="height: 100%;">
+                <div class="header-default df alg fw header-tab">
+                    <button class="glass-btn" onclick="buscarOportunidade()">
+                        <i class="ph ph-magnifying-glass"></i>
+                    </button>
+                    <button type="button" id="btn-atualizar" onclick="atualizarCamposEspecificos()">
+                        <i class="ph ph-user-switch"></i>
+                    </button>
+                    </i>
+                </div>
+                <div class="form-geral-tabs">
+                    <form class="ng-untouched ng-pristine ng-valid">
+                        <div class="form-header">
+                            <div class="row">
+                                <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Nº da Oportunidade</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="op">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Nome Cliente</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="cliente" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Código Cliente</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="cod" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Nome da Opor</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="nomeopor" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Vendedor</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="vendedor" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Data de Abertura</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="dataaber" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Número da Licitação</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="U_NumLicitacao">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 segund-col">
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Status</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="status">
+                                                    <option value="">Selecione</option>
+                                                    <option value="sos_Sold">Ganhou</option>
+                                                    <option value="sos_Missed">Perdeu</option>
+                                                    <option value="sos_Open">Em aberto</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Prev.</label>
+                                            </div>
+                                            <div class="col-xl-3 field">
+                                                <input type="text" id="fechamento" disabled>
+                                            </div>
+                                            <div class="col-xl-3 label last-4-inputs">
+                                                <label>Potencial (R$)</label>
+                                            </div>
+                                            <div class="col-xl-3 field last-4-inputs">
+                                                <input type="text" id="valor" disabled>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Esfera</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="Esfera">
+                                                    <option value="">Selecione</option>
+                                                    <option value="E">Estadual</option>
+                                                    <option value="F">Federal</option>
+                                                    <option value="M">Municipal</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Modalidade</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="Modalidade">
+                                                    <option value="">Selecione</option>
+                                                    <option value="PE">Pregão Eletrônico</option>
+                                                    <option value="SI">Sincovi</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div style="height: 100%; border: 1px solid #a4b7c1; margin-top: -1px; padding: 16px;">
+        <div>
+            <section class="animated scroll_estilizado fadeIn content-inside" style="height: 100%;">
+                <div class="header-default df alg fw header-tab">
+                    <button type="button" id="btnadd" onclick="enviarConcorrente()">
+                        <i class="ph ph-user-circle-plus"></i>
+                    </button>
+                </div>
+                <div class="form-geral-tabs">
+                    <form class="ng-untouched ng-pristine ng-valid">
+                        <div class="form-header">
+                            <div class="row">
+                                <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Concorrente</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="concorrente">
+                                                    <option value="">Selecione</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Ameaça</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="grau">
+                                                    <option value="">Selecione</option>
+                                                    <option value="Baixo">Baixo</option>
+                                                    <option value="Médio">Médio</option>
+                                                    <option value="Alto">Alto</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Marca/Fabricante</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="marca">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Modelo</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="modelo">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>V. Unitário</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="valorUnit">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>V. Total</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="valorTot">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Observação</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="obs">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 segund-col">
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Quantidade</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="number" id="quantidade" min="1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Item</label>
+                                            </div>
+                                            <div class="col-xl-3 field">
+                                                <input type="number" id="Item">
+                                            </div>
+                                            <div class="col-xl-3 label last-4-inputs">
+                                                <label>Posição</label>
+                                            </div>
+                                            <div class="col-xl-3 field last-4-inputs">
+                                                <input type="number" id="pos">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Tipo do Item</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="ItemsSafe">
+                                                    <option value="">Carregando itens...</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Item Safe</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <select id="ItemSafe">
+                                                    <option value="">Selecione</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </div>
+    <div style="height: 100%; border: 1px solid #a4b7c1; margin-top: -1px; padding: 16px;">
+        <div>
+            <section class="animated scroll_estilizado fadeIn content-inside" style="height: 100%;">
+                <div class="header-default df alg fw header-tab">
+                    <i class="ph ph-chart-bar cubo tab-btn active" onclick="abrirTab('concorrentes', this)"></i>
+                    <i class="ph ph-lego cubo cubo tab-btn" onclick="abrirTab('itens', this)"></i>
+                    <button id="btnAtualizarConcorrente" type="button">
+                        <i class="ph ph-user-switch atualizar"></i>
+                    </button>
+                    <button type="button" id="btnitem" onclick="criarItem()">
+                        <i class="ph ph-circles-three-plus circle"></i>
+                    </button>
+                </div>
+            </section>
+            <!-- Aba Concorrentes -->
+            <div id="concorrentes" class="tab-content active">
+                <div class="aba-concorrentes">
+                    <div class="concorrentes-grid" id="grid-concorrentes">
+                        <div>Linha</div>
+                        <div>Concorrente</div>
+                        <div>Grau de Ameaça</div>
+                        <div>Marca/Fabricante</div>
+                        <div>Modelo</div>
+                        <div>Observação</div>
+                        <div>Qtde</div>
+                        <div>V. Unitário</div>
+                        <div>V. Total</div>
+                        <div>Item Cliente</div>
+                        <div>Posição</div>
+                        <div>Item Safe</div>
+
+                        <div><input type="number" class="rowno" readonly /></div>
+                        <div><select class="grid-select conc">
+                                <option value=""></option>
+                            </select></div>
+                        <div>
+                            <select class="grid-select">
+                                <option value=""></option>
+                                <option value="Baixo">Baixo</option>
+                                <option value="Médio">Médio</option>
+                                <option value="Alto">Alto</option>
+                            </select>
+                        </div>
+                        <div><input type="text" /></div>
+                        <div><input type="text" /></div>
+                        <div><input type="text" /></div>
+                        <div><input type="number" /></div>
+                        <div><input type="text" /></div>
+                        <div><input type="text" /></div>
+                        <div><input class="campo-u_item" type="number" /></div>
+                        <div><input type="number" /></div>
+
+                        <div class="item-field" style="display:flex; align-items:center; gap:4px;">
+                            <input type="text" class="nome-item" readonly style="flex:1;" />
+                            <button type="button" onclick="abrirModalItemSafe(this)" style="padding:2px 6px;"><i
+                                    class="ph-fill ph-arrow-fat-right modal-arrow"
+                                    style="color:rgb(249, 190, 54)"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba Itens -->
+            <div id="itens" class="tab-content">
+
+                <div class="form-geral-tabs">
+                    <form class="ng-untouched ng-pristine ng-valid">
+
+                        <div class="form-header">
+                            <div class="row">
+
+                                <!-- ===== ESQUERDA | INPUTS ===== -->
+                                <div class="col-12 col-md-5 col-lg-4">
+
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Nº do item</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="U_Item">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Qtde de Itens</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="U_Qtde">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="inputs-form">
+                                        <div class="row alg">
+                                            <div class="col-xl-3 label">
+                                                <label>Descrição</label>
+                                            </div>
+                                            <div class="col-xl-9 field">
+                                                <input type="text" id="U_Descricao">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- ===== DIREITA | GRID ===== -->
+                                <div class="col-12 col-md-7 col-lg-8">
+
+                                    <div class="section-itens">
+                                        <div class="itens-grid" id="grid-itens">
+                                            <!-- gerado via JS -->
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    <!-- Modal para adicionar novo concorrente -->
+    <div id="modalConcorrente" class="modal">
+        <div class="modal-content">
+            <span onclick="fecharModal()" class="close">&times;</span>
+            <h3>Definir Novo Competidor</h3>
+            <label for="nomeCompetidor">Nome do Competidor</label>
+            <input type="text" id="nomeCompetidor" required />
+            <button type="button" id="btnmodal" onclick="salvarNovoConcorrente()">Salvar</button>
+            <p>O nome só pode possuir 15 caracteres.</p>
+        </div>
+    </div>
+    <!-- Modal Item Safe -->
+    <div id="modalItemSafe" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="fecharModalItemSafe()">&times;</span>
+            <h3>Selecionar Item Safe</h3>
+
+            <div class="form-row-end">
+                <label>Selecione o Tipo do item:</label>
+                <select id="ItemsSafeModal" required>
+                    <option value="">Carregando itens...</option>
+                </select>
+            </div>
+
+            <div class="form-row-end">
+                <label>Item Safe</label>
+                <select id="ItemSafeModal">
+                    <option value="">Selecione</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
