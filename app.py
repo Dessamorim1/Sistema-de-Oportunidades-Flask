@@ -2,7 +2,7 @@ import os
 import sys
 import logging
 
-from flask import Flask, render_template 
+from flask import Flask, render_template
 from waitress import serve
 from dotenv import load_dotenv
 
