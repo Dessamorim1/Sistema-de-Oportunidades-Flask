@@ -7,6 +7,7 @@ from waitress import serve
 from dotenv import load_dotenv
 from login_required import login_required
 from datetime import timedelta
+from exceptions import SAPError
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,6 +33,10 @@ def resource_path(relative_path):
 app = Flask(__name__,template_folder=resource_path("templates"),static_folder=resource_path("static"))
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.permanent_session_lifetime = timedelta(minutes=30)
+
+@app.errorhandler(SAPError)
+def handle_sap_error(e):
+    return jsonify({"erro": e.mensagem, "code": e.code}), e.status_code
 
 @app.route('/')
 def home():
