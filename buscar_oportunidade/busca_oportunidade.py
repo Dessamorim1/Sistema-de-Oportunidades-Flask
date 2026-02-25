@@ -28,8 +28,8 @@ def buscar_opor():
         sap = get_sap()   
         endpoint = (
             "SalesOpportunities"
-            f"?$filter=SequentialNo eq {seq_no_int}"
-            "&$select="
+            f"({seq_no_int})"
+            "?$select="
             "CardCode,"
             "CustomerName,"
             "OpportunityName,"
@@ -47,9 +47,6 @@ def buscar_opor():
         if_not_ok(resp)
 
         resultado = resp.get('data',[])
-        if not resultado:
-            logger.error(f"Oportunidade {seq_no_int} não encontrada")
-            return jsonify({"erro" : "Oportunidade não encontrada"}),404
         
         logger.info(f"Oportunidade Buscada {seq_no_int} com sucesso!")
         return jsonify(resultado),200

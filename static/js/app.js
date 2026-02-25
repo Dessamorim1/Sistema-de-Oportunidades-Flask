@@ -5,6 +5,7 @@ let concorrentesCadastrados = [];
 
 window.addEventListener('load', () => {
     carregar_concorrentes();
+    carregarTiposItens('ItemsSafe');
     gerarLinhasItens(20);
     gerarLinhasConcorrentes(1100);
 });
@@ -102,6 +103,34 @@ async function carregar_concorrentes() {
         });
 }
 
+// ===== Carrega tipos de itens =====
+
+function carregarTiposItens(selectId, onChangeCallback) {
+    fetch('/api/buscar_tipo_itens')
+        .then(res => res.json())
+        .then(lista => {
+            console.log(lista)
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            select.innerHTML = '<option value="">Selecione</option>';
+            lista.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c.Code;
+                option.text = c.Name;
+                select.appendChild(option);
+                console.log("to entrnado no foreach");
+            });
+            if (onChangeCallback) {
+                select.addEventListener("change", () => {
+                    onChangeCallback(select.value);
+                });
+            }
+        })
+        .catch(() => {
+            alerta('error', 'Erro ao carregar tipos de itens', 'Tente novamente mais tarde.');
+        });
+}
+
 // Buscar Oportunidade
 
 async function buscarOportunidade() {
@@ -131,8 +160,8 @@ async function buscarOportunidade() {
             valor: data.MaxLocalTotal,
             vendedor: data.SalesPerson,
             status: data.Status,
-            modalidade: data.U_Modalidade,
-            esfera: data.U_Esfera,
+            U_Modalidade: data.U_Modalidade,
+            U_Esfera: data.U_Esfera,
             U_NumLicitacao: data.U_NumLicitacao,
             U_NumOpor: seq_no
         };

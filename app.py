@@ -8,9 +8,11 @@ from dotenv import load_dotenv
 from login_required import login_required
 from datetime import timedelta
 from exceptions import SAPError
+from tratamento_sap import traducao_mensagem_erro
 
 from buscar_oportunidade.busca_oportunidade import buscar_oportunidade_blueprint
 from buscar_concorrentes.buscar_concorrentes import buscar_concorrentes_blueprint
+from buscar_tipo_itens.buscar_tipo_itens import buscar_tipo_itens_blueprint
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,10 +41,13 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 
 app.register_blueprint(buscar_oportunidade_blueprint)
 app.register_blueprint(buscar_concorrentes_blueprint)
+app.register_blueprint(buscar_tipo_itens_blueprint)
 
 @app.errorhandler(SAPError)
 def handle_sap_error(e):
-    return jsonify({"erro": e.mensagem, "code": e.code}), e.status_code
+    msg = traducao_mensagem_erro(e.code, e.mensagem)
+
+    return jsonify({"erro": msg,"code": e.code}), e.status_code
 
 @app.route('/')
 def home():
