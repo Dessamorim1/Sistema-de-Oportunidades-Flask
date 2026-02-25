@@ -26,7 +26,24 @@ def buscar_opor():
     
     try:    
         sap = get_sap()   
-        resp = sap.get_endpoint(f'SalesOpportunities?$filter=SequentialNo eq {seq_no_int}&$select=CardCode,CustomerName,OpportunityName,StartDate,PredictedClosingDate,MaxLocalTotal,SalesPerson,Status,U_Modalidade,U_Esfera,U_NumLicitacao,SalesOpportunitiesCompetition')
+        endpoint = (
+            "SalesOpportunities"
+            f"?$filter=SequentialNo eq {seq_no_int}"
+            "&$select="
+            "CardCode,"
+            "CustomerName,"
+            "OpportunityName,"
+            "StartDate,"
+            "PredictedClosingDate,"
+            "MaxLocalTotal,"
+            "SalesPerson,"
+            "Status,"
+            "U_Modalidade,"
+            "U_Esfera,"
+            "U_NumLicitacao,"
+            "SalesOpportunitiesCompetition"
+        )
+        resp = sap.get_endpoint(endpoint)
         if_not_ok(resp)
 
         resultado = resp.get('data',[])
