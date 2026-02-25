@@ -4,6 +4,7 @@ let concorrentesCadastrados = [];
 // Listeners
 
 window.addEventListener('load', () => {
+    carregar_concorrentes();
     gerarLinhasItens(20);
     gerarLinhasConcorrentes(1100);
 });
@@ -44,6 +45,7 @@ function mensagem_erro(err, tituloPadrao = "Erro") {
 }
 
 // Função padrão para tratar erros
+
 function mensagem_erro(err, tituloPadrao = "Erro") {
     const msg = (err && err.message) ? err.message : String(err);
 
@@ -62,6 +64,42 @@ function mensagem_erro(err, tituloPadrao = "Erro") {
     }
 
     alerta('error', tituloPadrao, msg);
+}
+
+// Selects
+
+async function carregar_concorrentes() {
+    fetch('/api/buscar_concorrentes')
+        .then(res => res.json())
+        .then(lista => {
+            concorrentesCadastrados = lista;
+            nomes = lista.map(c => c.Name);
+
+            const concorrente = document.getElementById("concorrente");
+            if (!concorrente) return;
+
+            concorrente.innerHTML = '<option value="">Selecione</option>';
+            lista.forEach(c => {
+                const option = document.createElement("option");
+                option.value = c.SequenceNo;
+                option.text = c.Name;
+                concorrente.appendChild(option);
+            });
+            const optionNew = document.createElement("option");
+            optionNew.value = "novo";
+            optionNew.text = "Definir Novo";
+            concorrente.appendChild(optionNew);
+
+            concorrente.addEventListener("change", function () {
+                if (this.value === "novo") {
+                    this.value = "";
+                    abrirModal();
+                }
+            })
+        })
+        .catch(() => {
+            alerta('error', 'Erro ao carregar competidores', 'Não foi possível carregar a lista de competidores. Por favor, tente novamente mais tarde.');
+        });
 }
 
 // Buscar Oportunidade

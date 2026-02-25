@@ -10,6 +10,7 @@ from datetime import timedelta
 from exceptions import SAPError
 
 from buscar_oportunidade.busca_oportunidade import buscar_oportunidade_blueprint
+from buscar_concorrentes.buscar_concorrentes import buscar_concorrentes_blueprint
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,6 +38,7 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.permanent_session_lifetime = timedelta(minutes=30)
 
 app.register_blueprint(buscar_oportunidade_blueprint)
+app.register_blueprint(buscar_concorrentes_blueprint)
 
 @app.errorhandler(SAPError)
 def handle_sap_error(e):
