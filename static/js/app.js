@@ -1,7 +1,220 @@
+let concorrentesAtuais = [];
+let concorrentesCadastrados = [];
+
+// Listeners
+
 window.addEventListener('load', () => {
     gerarLinhasItens(20);
     gerarLinhasConcorrentes(1100);
 });
+
+// Alerta
+
+function alerta(tipo, titulo, mensagem) {
+    return Swal.fire({
+        icon: tipo,
+        title: titulo,
+        text: mensagem,
+        confirmButtonText: "Fechar",
+        customClass: {
+            popup: "meu-alerta-popup",
+            title: "meu-alerta-titulo",
+            confirmButton: "meu-alerta-botao",
+        },
+    });
+}
+
+// Mensagens erro de rede 
+
+function mensagem_erro(err, tituloPadrao = "Erro") {
+    const msg = (err && err.message) ? err.message : String(err);
+
+    const isNetwork =
+        msg.includes("Failed to fetch") ||
+        msg.includes("NetworkError") ||
+        msg.includes("Load failed");
+
+    if (isNetwork) {
+        alerta('error', 'Servidor indisponível',
+            'Não consegui conectar ao servidor. Verifique se o Flask está ligado, a URL/porta está correta, ou se há bloqueio (CORS/rede).');
+        return;
+    }
+
+    alerta('error', tituloPadrao, msg);
+}
+
+// Função padrão para tratar erros
+function mensagem_erro(err, tituloPadrao = "Erro") {
+    const msg = (err && err.message) ? err.message : String(err);
+
+    const isNetwork =
+        msg.includes("Failed to fetch") ||
+        msg.includes("NetworkError") ||
+        msg.includes("Load failed");
+
+    if (isNetwork) {
+        alerta(
+            'error',
+            'Servidor indisponível',
+            'Não consegui conectar ao servidor. Verifique se o Flask está ligado, a URL/porta está correta, ou se há bloqueio (CORS/rede).'
+        );
+        return;
+    }
+
+    alerta('error', tituloPadrao, msg);
+}
+
+// Buscar Oportunidade
+
+async function buscarOportunidade() {
+    const seq_no = document.getElementById('op').value.trim();
+
+    if (!seq_no) {
+        return alerta('warning', 'Atenção', 'Informe o número da oportunidade.');
+    }
+
+    try {
+        const data_list = await apiFetchJson(`/api/buscar_oportunidade?seq_no=${encodeURIComponent(seq_no)}`);
+
+        if (!data_list) return;
+
+        const data = Array.isArray(data_list) ? data_list[0] : data_list;
+
+        if (!data) {
+            throw new Error("Oportunidade não encontrada.");
+        }
+
+        const campos = {
+            cod: data.CardCode,
+            cliente: data.CustomerName,
+            nomeopor: data.OpportunityName,
+            dataaber: data.StartDate,
+            fechamento: data.PredictedClosingDate,
+            valor: data.MaxLocalTotal,
+            vendedor: data.SalesPerson,
+            status: data.Status,
+            modalidade: data.U_Modalidade,
+            esfera: data.U_Esfera,
+            U_NumLicitacao: data.U_NumLicitacao,
+            U_NumOpor: seq_no
+        };
+
+        Object.entries(campos).forEach(([id, valor]) => {
+            const el = document.getElementById(id);
+            if (el) el.value = valor ?? "";
+        });
+
+        concorrentesAtuais = data.SalesOpportunitiesCompetition || [];
+        preencherConcorrentes(concorrentesAtuais);
+
+    } catch (err) {
+        mensagem_erro(err, "Erro ao buscar oportunidade");
+        document.querySelectorAll("input[disabled]").forEach(el => el.value = "");
+    }
+}
+
+// Preencher Os comptidores da oportunidade
+
+function preencherConcorrentes(lista) {
+    const linhas = document.querySelectorAll(".concorrentes-grid div input, .concorrentes-grid div select");
+
+    for (let i = 0; i < linhas.length; i += 12) {
+        const camposLinha = Array.from(linhas).slice(i, i + 12);
+
+        camposLinha[0].value = "";
+        camposLinha[1].innerHTML = '<option value=""></option>';
+        camposLinha[2].innerHTML = '<option value=""></option><option value="Baixo">Baixo</option><option value="Médio">Médio</option><option value="Alto">Alto</option>';
+        for (let j = 3; j <= 11; j++) {
+            if (camposLinha[j]) camposLinha[j].value = "";
+        }
+    }
+
+    for (let i = 0; i < lista.length; i++) {
+        const c = lista[i] || {};
+        const campos = Array.from(linhas).slice(i * 12, (i + 1) * 12);
+        if (campos.length < 12) break;
+
+        campos[0].value = c.RowNo || '';
+
+        const select = campos[1];
+        select.innerHTML = '';
+        concorrentesCadastrados.forEach(cOpt => {
+            const opt = document.createElement("option");
+            opt.value = cOpt.SequenceNo;
+            opt.text = cOpt.Name;
+            select.appendChild(opt);
+        });
+
+        const optionSelecionada = Array.from(select.options).find(opt => Number(opt.value) === Number(c.Competition));
+        select.value = optionSelecionada ? optionSelecionada.value : "";
+
+        const grauSelect = campos[2];
+        switch (c.ThreatLevel) {
+            case 'tlLow': grauSelect.value = "Baixo"; break;
+            case 'tlMedium': grauSelect.value = "Médio"; break;
+            case 'tlHigh': grauSelect.value = "Alto"; break;
+            default: grauSelect.value = "";
+        }
+
+        campos[3].value = c.U_Marca || '';
+        campos[4].value = c.U_Modelo || '';
+        campos[5].value = c.U_Observacao || '';
+        campos[6].value = c.U_Quantidade || '';
+        campos[7].value = formatarMoedaParaExibicao(c.U_ValorUnit);
+        campos[8].value = formatarMoedaParaExibicao(c.U_ValorTot);
+        campos[9].value = c.U_Item || '';
+        campos[10].value = c.U_Posicao || '';
+        campos[11].value = c.U_ItemCode || '';
+    }
+}
+
+// Funções pra controle de expiração no fetch
+
+async function apiFetchJson(url, options = {}) {
+    const res = await fetch(url, { credentials: "same-origin", ...options });
+
+    if (res.status === 401) {
+        await alerta('error', "Sessão expirada", "Faça login novamente.");
+        window.location.href = "/";
+        return null;
+    }
+
+    let data = null;
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    if (ct.includes("application/json")) {
+        data = await res.json();
+    } else {
+        const txt = await res.text();
+        data = txt ? { message: txt } : null;
+    }
+
+    if (!res.ok) {
+        throw new Error(data?.erro || data?.message || `Erro HTTP ${res.status}`);
+    }
+
+    return data;
+}
+
+async function apiFetch(url, options = {}) {
+    try {
+        const response = await fetch(url, {
+            credentials: "same-origin",
+            ...options
+        });
+
+        if (response.status === 401) {
+            await alerta('error', "Sessão expirada", "Faça login novamente.");
+            window.location.href = "/";
+            return null;
+        }
+
+        return response;
+
+    } catch (err) {
+        console.error("Erro de rede:", err);
+        throw err;
+    }
+}
 
 // Gerar Linhas da grid
 
@@ -136,4 +349,13 @@ function abrirTab(tabId, el) {
     document.getElementById(tabId).classList.add('active');
 
     el.classList.add('active');
+}
+
+// Formatar Moedas
+
+function formatarMoedaParaExibicao(valor) {
+    if (valor == null) return '';
+    let v = Number(valor).toFixed(2).replace('.', ',');
+    v = v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return v;
 }

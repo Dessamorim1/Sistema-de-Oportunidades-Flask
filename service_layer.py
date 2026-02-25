@@ -2,21 +2,19 @@ import requests
 import urllib3
 from dotenv import load_dotenv
 import os
-from typing import Dict
+from typing import List,Dict,Optional
 import logging
-
 logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-class SAPServiceLayer:
+class SapServiceLayer:
     def __init__(self):
         self.base_url = os.getenv("SAP_BASE_URL")
         self.username = os.getenv("SAP_USERNAME")
         self.password = os.getenv("SAP_PASSWORD")
         self.company_db = os.getenv("SAP_COMPANY_DB")
         self.verify_ssl = os.getenv("SSL_VERIFY", "true").lower() == "true"
-        
         self.session = requests.Session()
 
         if not self.verify_ssl:
@@ -26,17 +24,16 @@ class SAPServiceLayer:
             self.session.verify = True
 
         self.session.headers.update({"Content-Type": "application/json"})
-    
+
     def __enter__(self):
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         return False
-       
-    #============================= Configuração Login =============================================
+    
+       #============================= Cookies ===================================
 
     def _request(self, method: str, endpoint: str, *, headers=None, json=None, params=None, timeout=30, retry=True):
-        print("Cookies antes da requisição:", self.session.cookies.get_dict())
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         headers = headers or {}
 
@@ -62,9 +59,9 @@ class SAPServiceLayer:
 
         except requests.RequestException as e:
             raise  
- 
+
     #====================================== Requisições HTTP =======================================
-    
+
     def get_endpoint(self,endpoint: str,maxpagesize: int=20):
         headers = {"Prefer": f"odata.maxpagesize={maxpagesize}"}
 
@@ -105,7 +102,7 @@ class SAPServiceLayer:
 
             return {"ok": False, "status_code": status, "data": payload_erro}
 
-    def patch_endpoint(self, endpoint: str, payload: Dict) ->  dict:
+    def patch_endpoint(self, endpoint: str, payload: Dict) -> dict:
         headers = {
             "Content-Type": "application/json",
             "B1S-ReplaceCollectionsOnPatch": "false"
@@ -116,17 +113,24 @@ class SAPServiceLayer:
             status_code = response.status_code
 
             if status_code in (200, 204):
-                logger.info(f"PATCH realizado com sucesso em: {endpoint}")    
-                return {"ok": True,"status_code": status_code}
-            
+                data = None
+                if status_code == 200:
+                    try:
+                        data = response.json()
+                    except ValueError:
+                        data = response.text or None
+
+                logger.info(f"PATCH realizado com sucesso em: {endpoint} (HTTP {status_code})")
+                return {"ok": True, "status_code": status_code, "data": data}
+
             try:
-               payload_erro = response.json()
+                payload_erro = response.json()
             except ValueError:
                 payload_erro = response.text
 
-            logger.error(f"Erro HTTP {response.status_code} ao fazer PATCH em {endpoint}: " f"{response.text}")
-            return {"ok": False, "status_code": status_code, "data": None}
-        
+            logger.error(f"Erro HTTP {status_code} ao fazer PATCH em {endpoint}: {payload_erro}")
+            return {"ok": False, "status_code": status_code, "data": payload_erro}
+
         except requests.exceptions.RequestException as e:
             resp = getattr(e, "response", None)
             status_code = resp.status_code if resp is not None else 500
@@ -139,7 +143,9 @@ class SAPServiceLayer:
             else:
                 payload_erro = str(e)
 
-            logger.exception(f"Falha de comunicação ao fazer PATCH em {endpoint} (HTTP {status_code}): {payload_erro}")
+            logger.exception(
+                f"Falha de comunicação ao fazer PATCH em {endpoint} (HTTP {status_code}): {payload_erro}"
+            )
             return {"ok": False, "status_code": status_code, "data": payload_erro}
         
     def post_endpoint(self, endpoint: str, payload: Dict):
@@ -170,17 +176,18 @@ class SAPServiceLayer:
                 payload_erro = str(e)
 
             return {"ok": False, "status_code": status, "data": payload_erro}
-        
-   #============================= AUTENTICAÇÃO ==============================
+
+      #============================= AUTENTICAÇÃO ==============================
 
     def login(self):
+        logger.info("Login realizado!")
         payload = {
             "CompanyDB": self.company_db,
             "UserName": self.username,
             "Password": self.password
         }
         try:
-            response = self.session.post(f"{self.base_url}/Login", json=payload)
+            response = self.session.post(f"{self.base_url}/Login",json=payload)
             response.raise_for_status()
             return True
         except requests.RequestException as e:
@@ -196,6 +203,3 @@ class SAPServiceLayer:
         except requests.RequestException as e:
             logger.error(f"Falha ao fazer logout: {e}")
             return False
-
-    
-    

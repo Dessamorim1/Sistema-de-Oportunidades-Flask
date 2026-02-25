@@ -9,6 +9,8 @@ from login_required import login_required
 from datetime import timedelta
 from exceptions import SAPError
 
+from buscar_oportunidade.busca_oportunidade import buscar_oportunidade_blueprint
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
@@ -33,6 +35,8 @@ def resource_path(relative_path):
 app = Flask(__name__,template_folder=resource_path("templates"),static_folder=resource_path("static"))
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
 app.permanent_session_lifetime = timedelta(minutes=30)
+
+app.register_blueprint(buscar_oportunidade_blueprint)
 
 @app.errorhandler(SAPError)
 def handle_sap_error(e):
