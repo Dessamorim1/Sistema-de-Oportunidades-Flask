@@ -558,3 +558,48 @@ function abrirModal() {
 function fecharModal() {
     document.getElementById("modalConcorrente").style.display = "none";
 }
+
+// Criar competidores
+
+
+async function criarConcorrente() {
+    const input = document.getElementById("nomeCompetidor");
+    const nome = input.value.trim();
+    const nomeDigitado = nome.toLowerCase();
+
+    if (!nome) {
+        await alerta('error', 'Nome do Concorrente não informado', 'Você precisa informar um nome válido.');
+        return;
+    }
+
+    if (nome.length > 15) {
+        await alerta('error', 'Nome do Concorrente ultrapassa 15 caracteres', 'Informe um nome menor ou igual a 15 caracteres.');
+        return;
+    }
+
+    for (let i = 0; i < nomes.length; i++) {
+        if (nomeDigitado === nomes[i].trim().toLowerCase()) {
+            await alerta('info', 'Concorrente já cadastrado', 'Este nome de concorrente já existe, tente um novo.');
+            return;
+        }
+    }
+
+    try {
+        const data = await apiFetchJson('/api/criar_competidores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ novoConcorrenteNome: { Name: nome } })
+        });
+
+        if (!data) return; // sessão expirada
+
+        await alerta('success', 'Concorrente adicionado com sucesso', 'Você já pode usar o novo concorrente cadastrado.');
+        input.value = "";
+        fecharModal();
+        carregar_concorrentes();
+
+    } catch (err) {
+        await alerta('error', 'Erro ao adicionar concorrente', err.message || 'Verifique os dados e tente novamente.');
+        console.error(err);
+    }
+}

@@ -16,6 +16,8 @@ from buscar_tipo_itens.buscar_tipo_itens import buscar_tipo_itens_blueprint
 from buscar_itens_filtrados.buscar_itens_filtrados import buscar_itens_filtrados_blueprint
 from buscar_itens.buscar_itens import buscar_itens_blueprint
 
+from criar_competidores.criar_competidores import criar_competidores_blueprint
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
@@ -46,6 +48,8 @@ app.register_blueprint(buscar_concorrentes_blueprint)
 app.register_blueprint(buscar_tipo_itens_blueprint)
 app.register_blueprint(buscar_itens_filtrados_blueprint)
 app.register_blueprint(buscar_itens_blueprint)
+
+app.register_blueprint(criar_competidores_blueprint)
 
 @app.errorhandler(SAPError)
 def handle_sap_error(e):
