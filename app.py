@@ -13,6 +13,8 @@ from tratamento_sap import traducao_mensagem_erro
 from buscar_oportunidade.busca_oportunidade import buscar_oportunidade_blueprint
 from buscar_concorrentes.buscar_concorrentes import buscar_concorrentes_blueprint
 from buscar_tipo_itens.buscar_tipo_itens import buscar_tipo_itens_blueprint
+from buscar_itens_filtrados.buscar_itens_filtrados import buscar_itens_filtrados_blueprint
+from buscar_itens.buscar_itens import buscar_itens_blueprint
 
 logging.basicConfig(
     level=logging.INFO,
@@ -42,6 +44,8 @@ app.permanent_session_lifetime = timedelta(minutes=30)
 app.register_blueprint(buscar_oportunidade_blueprint)
 app.register_blueprint(buscar_concorrentes_blueprint)
 app.register_blueprint(buscar_tipo_itens_blueprint)
+app.register_blueprint(buscar_itens_filtrados_blueprint)
+app.register_blueprint(buscar_itens_blueprint)
 
 @app.errorhandler(SAPError)
 def handle_sap_error(e):

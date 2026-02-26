@@ -7,7 +7,21 @@ window.addEventListener('load', () => {
     carregar_concorrentes();
     carregarTiposItens('ItemsSafe');
     gerarLinhasItens(20);
-    gerarLinhasConcorrentes(1100);
+    gerarLinhasConcorrentes(100);
+
+    const itemSelect = document.getElementById("ItemSafeModal");
+    if (itemSelect) {
+        itemSelect.addEventListener("change", function () {
+            if (inputAtivo && this.value) {
+                inputAtivo.value = this.value;
+                fecharModalItemSafe();
+            }
+        });
+    }
+});
+
+carregarTiposItens("ItemsSafe", (code) => {
+    carregarItensFiltradosGenerico("ItemSafe", code);
 });
 
 // Alerta
@@ -39,28 +53,6 @@ function mensagem_erro(err, tituloPadrao = "Erro") {
     if (isNetwork) {
         alerta('error', 'Servidor indisponível',
             'Não consegui conectar ao servidor. Verifique se o Flask está ligado, a URL/porta está correta, ou se há bloqueio (CORS/rede).');
-        return;
-    }
-
-    alerta('error', tituloPadrao, msg);
-}
-
-// Função padrão para tratar erros
-
-function mensagem_erro(err, tituloPadrao = "Erro") {
-    const msg = (err && err.message) ? err.message : String(err);
-
-    const isNetwork =
-        msg.includes("Failed to fetch") ||
-        msg.includes("NetworkError") ||
-        msg.includes("Load failed");
-
-    if (isNetwork) {
-        alerta(
-            'error',
-            'Servidor indisponível',
-            'Não consegui conectar ao servidor. Verifique se o Flask está ligado, a URL/porta está correta, ou se há bloqueio (CORS/rede).'
-        );
         return;
     }
 
@@ -173,6 +165,7 @@ async function buscarOportunidade() {
 
         concorrentesAtuais = data.SalesOpportunitiesCompetition || [];
         preencherConcorrentes(concorrentesAtuais);
+        buscarItens(seq_no);
 
     } catch (err) {
         mensagem_erro(err, "Erro ao buscar oportunidade");
@@ -232,6 +225,51 @@ function preencherConcorrentes(lista) {
         campos[9].value = c.U_Item || '';
         campos[10].value = c.U_Posicao || '';
         campos[11].value = c.U_ItemCode || '';
+    }
+}
+
+function preencherItens(listaItens) {
+    const campos = document.querySelectorAll(".itens-grid input");
+
+    for (let i = 0; i < listaItens.length && i * 3 + 2 < campos.length; i++) {
+        const item = listaItens[i];
+        const base = i * 3;
+        campos[base].value = item.U_Item || '';
+        campos[base + 1].value = item.U_Descricao || '';
+        campos[base + 2].value = item.U_Qtde || '';
+    }
+
+    for (let i = listaItens.length; i * 3 + 2 < campos.length; i++) {
+        const base = i * 3;
+        campos[base].value = '';
+        campos[base + 1].value = '';
+        campos[base + 2].value = '';
+    }
+}
+
+async function buscarItens(seq_no) {
+    if (!seq_no) {
+        preencherItens([]);
+        return;
+    }
+
+    try {
+        const dados = await apiFetchJson(
+            `/api/buscar_itens?seq_no=${encodeURIComponent(seq_no)}`
+        );
+
+        if (!dados) {
+            preencherItens([]);
+            return;
+        }
+
+        const listaItens = dados.value || dados || [];
+        preencherItens(listaItens);
+
+    } catch (err) {
+        console.error(err);
+        preencherItens([]);
+        alerta('error', 'Erro ao buscar itens', 'Não foi possível carregar os itens. Tente novamente mais tarde.');
     }
 }
 
@@ -425,4 +463,98 @@ function formatarMoedaParaExibicao(valor) {
     let v = Number(valor).toFixed(2).replace('.', ',');
     v = v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return v;
+}
+
+// ===== Carrega itens filtrados =====
+
+async function carregarItensFiltradosGenerico(selectId, code, inputAtivo = null) {
+    const $select = $('#' + selectId);
+    $select.empty().append('<option>Carregando...</option>');
+
+    if (!code) {
+        $select.empty().append('<option value="">Selecione</option>');
+        if ($select.hasClass("select2-hidden-accessible")) $select.val('').trigger('change');
+        return;
+    }
+
+    try {
+        const lista = await apiFetchJson(
+            `/api/buscar_itens_filtrados?U_FOC=${encodeURIComponent(code)}`
+        );
+        if (!lista) return;
+
+        todos_itens_safe = lista;
+
+        $select.empty().append('<option value="">Selecione</option>');
+
+        if (!Array.isArray(lista) || lista.length === 0) {
+            $select.append('<option value="">Nenhum item</option>');
+            if ($select.hasClass("select2-hidden-accessible")) $select.val('').trigger('change');
+            alerta('error', 'Nenhum item encontrado', 'Não existe nenhum item com esse tipo.');
+            return;
+        }
+
+        lista.forEach(item => {
+            $select.append(new Option(item.ItemName, item.ItemCode));
+        });
+
+        if ($select.hasClass("select2-hidden-accessible")) {
+            $select.trigger('change');
+        } else {
+            $select.select2({
+                placeholder: 'Digite para filtrar...',
+                allowClear: true,
+                width: 'resolve'
+            });
+        }
+
+        if (inputAtivo) {
+            $select.off('select2:select').on('select2:select', function (e) {
+                const selecionado = e.params.data; 
+                inputAtivo.value = selecionado.id || '';
+                fecharModalItemSafe();
+            });
+
+            $select.off('select2:clear').on('select2:clear', function () {
+                inputAtivo.value = '';
+            });
+        }
+
+        if (lista.length === 1) {
+            $select.val(lista[0].ItemCode).trigger('change');
+        }
+
+    } catch (err) {
+        console.error(err);
+        mensagem_erro(err, 'Erro ao carregar itens');
+    }
+}
+
+// ===== Modal Itens =====
+
+function abrirModalItemSafe(botao) {
+    inputAtivo = botao.parentElement.querySelector(".nome-item");
+    document.getElementById("modalItemSafe").style.display = "flex";
+
+    document.getElementById("ItemsSafeModal").innerHTML = '<option value="">Carregando...</option>';
+    document.getElementById("ItemSafeModal").innerHTML = '<option value="">Selecione</option>';
+
+    carregarTiposItens("ItemsSafeModal", (code) => {
+        carregarItensFiltradosGenerico("ItemSafeModal", code, inputAtivo);
+    });
+}
+
+function fecharModalItemSafe() {
+    document.getElementById("modalItemSafe").style.display = "none";
+    inputAtivo = null;
+}
+
+// ===== Modal Concorrentes =====
+
+function abrirModal() {
+    document.getElementById("modalConcorrente").style.display = "flex";
+}
+
+function fecharModal() {
+    document.getElementById("modalConcorrente").style.display = "none";
 }
